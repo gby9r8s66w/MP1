@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0B0D12">
+  <meta name="description" content="LUNARPACE — offline-first self-management by moonlight. Plan by the moon. Run the horizon.">
+  <title>LUNARPACE — Plan by the moon</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icons/icon.svg">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="stars" aria-hidden="true"></div>
+
+  <header class="topbar">
+    <div class="brand">
+      <svg width="26" height="26" viewBox="0 0 512 512" aria-hidden="true">
+        <path d="M256 86 A170 170 0 0 1 256 426 A230 230 0 0 0 256 86 Z" fill="var(--accent)"/>
+      </svg>
+      <span class="brand-name">LUNAR<i>PACE</i></span>
+    </div>
+    <div class="topbar-meta">
+      <div id="todayDate" class="today-date">—</div>
+      <div id="streak" class="streak" title="Consecutive days with a completed plan">STREAK <b>0</b></div>
+    </div>
+  </header>
+
+  <main>
+    <!-- MOON STAGE -->
+    <section class="moon-stage">
+      <div class="moon-wrap">
+        <div class="moon-halo" aria-hidden="true"></div>
+        <svg id="moonSvg" viewBox="-115 -115 230 230" role="img" aria-label="Current moon phase and orientation">
+          <defs>
+            <clipPath id="moonClip"><circle r="100"/></clipPath>
+            <radialGradient id="moonGrad" cx="38%" cy="30%" r="85%">
+              <stop offset="0%" stop-color="#F5F6F0"/>
+              <stop offset="100%" stop-color="#C3C9D4"/>
+            </radialGradient>
+          </defs>
+          <g id="moonRot">
+            <circle r="100" fill="#151A24" stroke="#2A3140" stroke-width="1.5"/>
+            <path id="moonLit" fill="url(#moonGrad)"/>
+            <g clip-path="url(#moonClip)" fill="#0C0F16" opacity="0.16">
+              <ellipse cx="-32" cy="-28" rx="21" ry="16"/>
+              <ellipse cx="26" cy="-42" rx="12" ry="10"/>
+              <ellipse cx="40" cy="16" rx="16" ry="14"/>
+              <ellipse cx="-12" cy="46" rx="10" ry="9"/>
+              <ellipse cx="-54" cy="18" rx="8" ry="7"/>
+              <ellipse cx="6" cy="-6" rx="27" ry="22" opacity="0.5"/>
+            </g>
+            <circle r="100" fill="none" stroke="rgba(244,246,248,0.12)" stroke-width="1.5"/>
+          </g>
+        </svg>
+      </div>
+      <div class="moon-stats">
+        <h1 id="phaseName" class="phase-name">—</h1>
+        <div class="stat-grid">
+          <div class="stat"><span class="stat-label">ILLUMINATION</span><span class="stat-value" id="statIllum">—</span></div>
+          <div class="stat"><span class="stat-label">LUNAR DAY</span><span class="stat-value" id="statDay">—</span></div>
+          <div class="stat"><span class="stat-label">NEXT FULL</span><span class="stat-value" id="statFull">—</span></div>
+          <div class="stat"><span class="stat-label">NEXT NEW</span><span class="stat-value" id="statNew">—</span></div>
+        </div>
+        <p class="stat-note" id="coordNote">EQUATOR VIEW — SET YOUR COORDINATES IN SETTINGS FOR TRUE LUNAR ROLL</p>
+      </div>
+    </section>
+
+    <!-- COMMAND BAR -->
+    <section class="cmd">
+      <label class="cmd-label" for="cmdInput">ADD A MOVE</label>
+      <div class="cmd-box">
+        <span class="cmd-caret" aria-hidden="true">›</span>
+        <input id="cmdInput" autocomplete="off" spellcheck="false"
+               placeholder="e.g.  interval run +3d @short #run   ·   type /help">
+        <button id="cmdGo" class="go-btn">GO</button>
+      </div>
+      <div id="cmdMsg" class="cmd-msg" role="status" aria-live="polite"></div>
+    </section>
+
+    <!-- TODAY STRIP -->
+    <section id="todayStrip" class="today-strip hidden">
+      <h2 class="strip-title">TODAY'S SPLIT</h2>
+      <div id="todayList" class="today-list"></div>
+    </section>
+
+    <!-- BOARD -->
+    <section id="board" class="board"></section>
+  </main>
+
+  <footer class="foot">
+    <button id="btnHelp" class="ghost-btn">COMMANDS</button>
+    <button id="btnSettings" class="ghost-btn">SETTINGS</button>
+    <span class="foot-note">OFFLINE-FIRST · DATA NEVER LEAVES YOUR DEVICE</span>
+  </footer>
+
+  <!-- HELP OVERLAY -->
+  <div id="helpOverlay" class="overlay hidden" role="dialog" aria-label="Command help">
+    <div class="panel">
+      <div class="panel-head"><h2>COMMAND SHEET</h2><button class="close-btn" data-close="helpOverlay">✕</button></div>
+      <table class="help-table">
+        <tr><td><code>trail run +5d @mid #cardio</code></td><td>add a plan</td></tr>
+        <tr><td><code>+Nd</code></td><td>due in N days</td></tr>
+        <tr><td><code>@short @mid @long</code></td><td>force a horizon</td></tr>
+        <tr><td><code>#tag</code></td><td>tag it</td></tr>
+        <tr><td>no date token</td><td>lands in ANYTIME</td></tr>
+        <tr><td><code>done stretch</code></td><td>complete by title match</td></tr>
+        <tr><td><code>drop stretch</code></td><td>delete by title match</td></tr>
+        <tr><td><code>/set short 7 mid 30 long 90</code></td><td>horizon lengths in days</td></tr>
+        <tr><td><code>/set lat 48.2 lon 16.4</code></td><td>your position (moon roll)</td></tr>
+        <tr><td><code>/help</code></td><td>this sheet</td></tr>
+      </table>
+      <p class="panel-note">Click any plan title to edit it inline. −/+ shifts the due date. ENTER saves, ESC cancels.</p>
+    </div>
+  </div>
+
+  <!-- SETTINGS OVERLAY -->
+  <div id="settingsOverlay" class="overlay hidden" role="dialog" aria-label="Settings">
+    <div class="panel">
+      <div class="panel-head"><h2>SETTINGS</h2><button class="close-btn" data-close="settingsOverlay">✕</button></div>
+
+      <h3 class="panel-sub">HORIZON LENGTHS (DAYS)</h3>
+      <div class="set-row">
+        <label>SHORT <input id="setShort" type="number" min="1" max="365"></label>
+        <label>MID <input id="setMid" type="number" min="2" max="730"></label>
+        <label>LONG <input id="setLong" type="number" min="3" max="3650"></label>
+      </div>
+
+      <h3 class="panel-sub">POSITION (FOR LUNAR ROLL)</h3>
+      <div class="set-row">
+        <label>LAT <input id="setLat" type="number" step="0.1" min="-90" max="90"></label>
+        <label>LON <input id="setLon" type="number" step="0.1" min="-180" max="180"></label>
+      </div>
+
+      <h3 class="panel-sub">ACCENT</h3>
+      <div class="set-row" id="accentRow">
+        <button class="accent-chip" data-accent="volt" style="background:#D8FF3D;color:#0B0D12">VOLT</button>
+        <button class="accent-chip" data-accent="signal" style="background:#FF6A3D;color:#120A06">SIGNAL</button>
+        <button class="accent-chip" data-accent="ice" style="background:#7DF9FF;color:#04151A">ICE</button>
+      </div>
+
+      <h3 class="panel-sub">DATA</h3>
+      <div class="set-row wrap">
+        <button id="btnExport" class="ghost-btn">EXPORT JSON</button>
+        <button id="btnImport" class="ghost-btn">IMPORT JSON</button>
+        <input type="file" id="importFile" accept=".json,application/json" hidden>
+        <button id="btnClearDone" class="ghost-btn">CLEAR ALL DONE</button>
+        <button id="btnReset" class="ghost-btn danger">RESET EVERYTHING</button>
+      </div>
+
+      <p class="panel-note" id="settingsMsg" role="status"></p>
+    </div>
+  </div>
+
+  <script src="store.js"></script>
+  <script src="moon.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
