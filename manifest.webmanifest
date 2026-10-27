@@ -1,0 +1,15 @@
+{
+  "name": "LUNARPACE",
+  "short_name": "LUNARPACE",
+  "description": "Offline-first self-management by moonlight. Plan by the moon. Run the horizon.",
+  "start_url": ".",
+  "scope": ".",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#0B0D12",
+  "theme_color": "#0B0D12",
+  "icons": [
+    { "src": "icons/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "icons/maskable.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "maskable" }
+  ]
+}
